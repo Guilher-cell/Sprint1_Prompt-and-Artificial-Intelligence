@@ -1,19 +1,23 @@
 # Sprint1_Prompt-and-Artificial-Intelligence
 Esse foi um trabalho educacional com o foco do entendimento de um chatbot, realizado pelo grupo:
 
-André Fujinaga - RM569158
-Arthur Machado - RM569919
-Conrado Gracie - RM569157
-Guilherme Belo - RM570079
-Renato Sandreschi - RM569156
+André Fujinaga - RM569158 ||
+Arthur Machado - RM569919 ||
+Conrado Gracie - RM569157 ||
+Guilherme Belo - RM570079 ||
+Renato Sandreschi - RM569156 ||
 
 faculdade de informática e administração paulista (FIAP).
 
 Para executar esse projeto execute em seu terminal pip install groq python-dotenv.
+
 Configure seu ambiente .env 
+
 GROQ_API_KEY=gsk_coloque_sua_chave_aqui.
+
 python chatbot.py
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 O Problema:
 O crescimento acelerado dos veículos elétricos no Brasil trouxe um desafio concreto para condomínios residenciais: como gerenciar o carregamento compartilhado de forma justa, segura e automatizada?
@@ -65,6 +69,7 @@ Perguntas típicas:
 "O carregador não está reconhecendo o cartão RFID. O que faço?"
 "Quando devo acionar o suporte técnico da GoodWe?"
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Tecnologias Escolhidas e Justificativa:
 Modelo de IA: Meta Llama 3 (via Groq)
@@ -87,111 +92,60 @@ Por que escolhemos o Groq?
 
 O Groq foi escolhido como plataforma de execução do modelo devido às suas vantagens em desempenho e facilidade de utilização. Um dos principais critérios é a velocidade, já que o Groq pode ser até 10 vezes mais rápido que GPUs convencionais para inferência de modelos de linguagem. Além disso, o serviço oferece um plano gratuito, sendo suficiente para desenvolvimento e testes durante o projeto.
 
-
 Bibliotecas Utilizadas
   No desenvolvimento do projeto, foram utilizadas bibliotecas específicas para facilitar a integração e aumentar a segurança da aplicação. A biblioteca groq foi utilizada como cliente oficial da API Groq, permitindo uma comunicação direta e simplificada com o modelo Llama. Já a biblioteca python-dotenv foi utilizada para o gerenciamento de variáveis de ambiente, protegendo a chave da API ao mantê-la armazenada no arquivo .env, evitando que informações sensíveis sejam enviadas para o GitHub.
 
 Fluxo de Funcionamento
 O diagrama abaixo representa o ciclo completo de uma interação com o chatbot:
-┌─────────────────────────────────────────────────────────┐
-│                   USUÁRIO NO TERMINAL                   │
-│         (Síndico, Morador ou Técnico/Zelador)           │
-└───────────────────────┬─────────────────────────────────┘
-                        │ digita a pergunta
-                        ▼
-┌─────────────────────────────────────────────────────────┐
-│              IDENTIFICAÇÃO DE PERSONA                   │
-│   O system prompt define o comportamento para cada      │
-│   tipo de usuário com base no contexto da mensagem      │
-└───────────────────────┬─────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────┐
-│               INJEÇÃO DO SYSTEM PROMPT                  │
-│   Contexto completo do GoodWe EV ChargeOps é enviado    │
-│   junto com a pergunta em TODAS as requisições          │
-└───────────────────────┬─────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────┐
-│              HISTÓRICO DE CONVERSA                      │
-│   Todas as mensagens anteriores são incluídas           │
-│   para que o modelo mantenha contexto e memória         │
-└───────────────────────┬─────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────┐
-│           API GROQ → LLAMA 3.1 8B INSTANT               │
-│   Processa: system prompt + histórico + nova pergunta   │
-│   Retorna: resposta contextualizada em português        │
-└───────────────────────┬─────────────────────────────────┘
-                        │
-              ┌─────────┴─────────┐
-              ▼                   ▼
-   ┌──────────────────┐  ┌──────────────────────────┐
-   │ DENTRO DO ESCOPO │  │   FORA DO ESCOPO EV/     │
-   │                  │  │   CONDOMÍNIO             │
-   │ Resposta clara   │  │                          │
-   │ e objetiva em    │  │ Informa educadamente     │
-   │ português        │  │ que está fora do escopo  │
-   └────────┬─────────┘  └──────────────────────────┘
-            │
-            ▼
-┌─────────────────────────────────────────────────────────┐
-│              EXIBE NO TERMINAL                          │
-│   Resposta impressa e conversa aguarda próxima          │
-│   mensagem — loop contínuo até digitar "sair"           │
-└─────────────────────────────────────────────────────────┘
+
+<img width="452" height="750" alt="image" src="https://github.com/user-attachments/assets/ce3b76c2-bdf8-43a6-a318-2ee63178b533" />
 
 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 System Prompt Base
-O system prompt é o texto enviado ao modelo antes de qualquer pergunta do usuário. Ele define a personalidade, o escopo, as regras de comportamento e o contexto técnico do chatbot. É o elemento mais importante do projeto — quanto mais preciso, melhor a qualidade das respostas.
+O system prompt é o texto enviado ao modelo antes de qualquer pergunta do usuário. Ele define a personalidade, o escopo, as regras de comportamento e o contexto técnico do chatbot. É o elemento mais importante do projeto quanto mais preciso, melhor a qualidade das respostas.
 
-┌────────────────────────────────────────────────────────────────────────┐
-│Você é o assistente virtual do sistema GoodWe EV ChargeOps,             │
-│desenvolvido para o EV Challenge 2026 em parceria com a GoodWe e a FIAP.│
-│                                                                        │
-│Seu foco é ajudar na gestão do carregamento de veículos elétricos       │
-│em condomínios residenciais. Você atende três tipos de usuários:        │
-│                                                                        │
-│SÍNDICO                                                                 │
-│- Relatórios de consumo geral e por unidade                             │
-│- Configuração de regras de uso e horários permitidos                   │
-│- Controle do limite de potência simultânea do condomínio               │
-│- Geração de boletos e rateio de custos de energia                      │
-│- Alertas de falha nos equipamentos                                     │
-│                                                                        │
-│MORADOR                                                                 │
-│- Consulta do próprio consumo mensal em kWh e em reais                  │
-│- Agendamento de horários de carregamento                               │
-│- Histórico de sessões de carregamento                                  │
-│- Entendimento da cobrança na conta do condomínio                       │
-│                                                                        │
-│TÉCNICO / ZELADOR                                                       │
-│- Diagnóstico de erros e alertas nos carregadores GoodWe                │
-│- Status de conectividade dos eletropostos                              │
-│- Procedimentos básicos de reinicialização                              │
-│- Quando acionar o suporte técnico GoodWe                               │
-│                                                                        │
-│CONTEXTO TÉCNICO DO SISTEMA:                                            │
-│- Os carregadores GoodWe monitoram consumo por RFID ou app              │
-│- O sistema limita a potência total para não sobrecarregar o quadro     │
-│elétrico                                                                │
-│- O rateio é feito proporcionalmente ao consumo de cada unidade         │
-│- Alertas são enviados por e-mail e no painel do síndico                │
-│                                                                        │
-│REGRAS DE COMPORTAMENTO:                                                │
-│1. Responda SEMPRE em português brasileiro claro e acessível            │
-│2. Identifique qual persona está perguntando quando possível            │
-│3. Se não souber um dado específico, oriente onde encontrar no sistema  │
-│4. Para falhas graves de equipamento, sempre indique o suporte GoodWe   │
-│5. Perguntas fora do contexto de EVs e gestão condominial:              │
-│   informe educadamente que estão fora do seu escopo                    │
-│6. Nunca invente dados numéricos — use exemplos ilustrativos quando     │
-│necessário                                                              │
-└────────────────────────────────────────────────────────────────────────┘
+"Você é o assistente virtual do sistema GoodWe EV ChargeOps, 
+desenvolvido para o EV Challenge 2026 em parceria com a GoodWe e a FIAP.
 
+Seu foco é ajudar na gestão do carregamento de veículos elétricos 
+em condomínios residenciais. Você atende três tipos de usuários:
 
+SÍNDICO
+- Relatórios de consumo geral e por unidade
+- Configuração de regras de uso e horários permitidos
+- Controle do limite de potência simultânea do condomínio
+- Geração de boletos e rateio de custos de energia
+- Alertas de falha nos equipamentos
+
+MORADOR
+- Consulta do próprio consumo mensal em kWh e em reais
+- Agendamento de horários de carregamento
+- Histórico de sessões de carregamento
+- Entendimento da cobrança na conta do condomínio
+  
+TÉCNICO / ZELADOR
+- Diagnóstico de erros e alertas nos carregadores GoodWe
+- Status de conectividade dos eletropostos
+- Procedimentos básicos de reinicialização
+- Quando acionar o suporte técnico GoodWe
+
+CONTEXTO TÉCNICO DO SISTEMA:
+- Os carregadores GoodWe monitoram consumo por RFID ou app
+- O sistema limita a potência total para não sobrecarregar o quadro elétrico
+- O rateio é feito proporcionalmente ao consumo de cada unidade
+- Alertas são enviados por e-mail e no painel do síndico
+
+REGRAS DE COMPORTAMENTO:
+1. Responda SEMPRE em português brasileiro claro e acessível
+2. Identifique qual persona está perguntando quando possível
+3. Se não souber um dado específico, oriente onde encontrar no sistema
+4. Para falhas graves de equipamento, sempre indique o suporte GoodWe
+5. Perguntas fora do contexto de EVs e gestão condominial:
+   informe educadamente que estão fora do seu escopo
+6. Nunca invente dados numéricos — use exemplos ilustrativos quando necessário"
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Modelo de Testes
 O modelo de testes define as 5 perguntas esperadas e o critério de avaliação da resposta ideal para cada uma. Este modelo será a base da avaliação na Sprint 2.
 
@@ -245,6 +199,7 @@ A resposta deve explicar o conceito de orquestração de carga (load balancing),
 O que avalia:
 Capacidade do chatbot de explicar um conceito técnico avançado (orquestração de potência) de forma acessível para um síndico sem formação técnica.
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Conclusão:
 
 A Sprint 1 estabeleceu as bases sólidas do GoodWe EV ChargeOps Chatbot, demonstrando que a combinação entre um system prompt bem estruturado, um modelo de linguagem de alta performance (Llama 3 via Groq) e um escopo condominial bem definido é suficiente para construir uma ferramenta operacional real — não apenas uma demonstração genérica de IA.
