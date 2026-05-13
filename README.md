@@ -9,7 +9,11 @@ Renato Sandreschi - RM569156
 
 faculdade de informática e administração paulista (FIAP).
 
-Para executar esse projeto execute em seu terminal pip install groq dotenv.
+Para executar esse projeto execute em seu terminal pip install groq python-dotenv.
+Configure seu ambiente .env 
+GROQ_API_KEY=gsk_coloque_sua_chave_aqui.
+python chatbot.py
+
 
 O Problema:
 O crescimento acelerado dos veículos elétricos no Brasil trouxe um desafio concreto para condomínios residenciais: como gerenciar o carregamento compartilhado de forma justa, segura e automatizada?
@@ -73,7 +77,7 @@ O modelo Llama 3 foi escolhido para o projeto devido a diferentes fatores que at
 
 Outro ponto importante é o contexto do projeto e sua flexibilidade é um diferencial, já que pode ser executado localmente ou utilizado via API, facilitando futuras evoluções e integrações do sistema.
 
-⚡ Plataforma de Inferência: Groq
+Plataforma de Inferência: Groq
 O que é o Groq?
 O Groq é uma empresa americana que desenvolveu um chip de processamento dedicado exclusivamente para inferência de modelos de linguagem, chamado LPU (Language Processing Unit). Diferente de GPUs convencionais, o LPU foi projetado do zero para processar texto gerado por LLMs com velocidade e eficiência máximas.
 
@@ -84,5 +88,165 @@ Por que escolhemos o Groq?
 O Groq foi escolhido como plataforma de execução do modelo devido às suas vantagens em desempenho e facilidade de utilização. Um dos principais critérios é a velocidade, já que o Groq pode ser até 10 vezes mais rápido que GPUs convencionais para inferência de modelos de linguagem. Além disso, o serviço oferece um plano gratuito, sendo suficiente para desenvolvimento e testes durante o projeto.
 
 
-📦 Bibliotecas Utilizadas
+Bibliotecas Utilizadas
   No desenvolvimento do projeto, foram utilizadas bibliotecas específicas para facilitar a integração e aumentar a segurança da aplicação. A biblioteca groq foi utilizada como cliente oficial da API Groq, permitindo uma comunicação direta e simplificada com o modelo Llama. Já a biblioteca python-dotenv foi utilizada para o gerenciamento de variáveis de ambiente, protegendo a chave da API ao mantê-la armazenada no arquivo .env, evitando que informações sensíveis sejam enviadas para o GitHub.
+
+Fluxo de Funcionamento
+O diagrama abaixo representa o ciclo completo de uma interação com o chatbot:
+┌─────────────────────────────────────────────────────────┐
+│                   USUÁRIO NO TERMINAL                   │
+│         (Síndico, Morador ou Técnico/Zelador)           │
+└───────────────────────┬─────────────────────────────────┘
+                        │ digita a pergunta
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│              IDENTIFICAÇÃO DE PERSONA                   │
+│   O system prompt define o comportamento para cada      │
+│   tipo de usuário com base no contexto da mensagem      │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│               INJEÇÃO DO SYSTEM PROMPT                  │
+│   Contexto completo do GoodWe EV ChargeOps é enviado    │
+│   junto com a pergunta em TODAS as requisições          │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│              HISTÓRICO DE CONVERSA                      │
+│   Todas as mensagens anteriores são incluídas           │
+│   para que o modelo mantenha contexto e memória         │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│           API GROQ → LLAMA 3.1 8B INSTANT               │
+│   Processa: system prompt + histórico + nova pergunta   │
+│   Retorna: resposta contextualizada em português        │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+              ┌─────────┴─────────┐
+              ▼                   ▼
+   ┌──────────────────┐  ┌──────────────────────────┐
+   │ DENTRO DO ESCOPO │  │   FORA DO ESCOPO EV/     │
+   │                  │  │   CONDOMÍNIO             │
+   │ Resposta clara   │  │                          │
+   │ e objetiva em    │  │ Informa educadamente     │
+   │ português        │  │ que está fora do escopo  │
+   └────────┬─────────┘  └──────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────────────────────────┐
+│              EXIBE NO TERMINAL                          │
+│   Resposta impressa e conversa aguarda próxima          │
+│   mensagem — loop contínuo até digitar "sair"           │
+└─────────────────────────────────────────────────────────┘
+
+
+System Prompt Base
+O system prompt é o texto enviado ao modelo antes de qualquer pergunta do usuário. Ele define a personalidade, o escopo, as regras de comportamento e o contexto técnico do chatbot. É o elemento mais importante do projeto — quanto mais preciso, melhor a qualidade das respostas.
+
+┌────────────────────────────────────────────────────────────────────────┐
+│Você é o assistente virtual do sistema GoodWe EV ChargeOps,             │
+│desenvolvido para o EV Challenge 2026 em parceria com a GoodWe e a FIAP.│
+│                                                                        │
+│Seu foco é ajudar na gestão do carregamento de veículos elétricos       │
+│em condomínios residenciais. Você atende três tipos de usuários:        │
+│                                                                        │
+│SÍNDICO                                                                 │
+│- Relatórios de consumo geral e por unidade                             │
+│- Configuração de regras de uso e horários permitidos                   │
+│- Controle do limite de potência simultânea do condomínio               │
+│- Geração de boletos e rateio de custos de energia                      │
+│- Alertas de falha nos equipamentos                                     │
+│                                                                        │
+│MORADOR                                                                 │
+│- Consulta do próprio consumo mensal em kWh e em reais                  │
+│- Agendamento de horários de carregamento                               │
+│- Histórico de sessões de carregamento                                  │
+│- Entendimento da cobrança na conta do condomínio                       │
+│                                                                        │
+│TÉCNICO / ZELADOR                                                       │
+│- Diagnóstico de erros e alertas nos carregadores GoodWe                │
+│- Status de conectividade dos eletropostos                              │
+│- Procedimentos básicos de reinicialização                              │
+│- Quando acionar o suporte técnico GoodWe                               │
+│                                                                        │
+│CONTEXTO TÉCNICO DO SISTEMA:                                            │
+│- Os carregadores GoodWe monitoram consumo por RFID ou app              │
+│- O sistema limita a potência total para não sobrecarregar o quadro     │
+│elétrico                                                                │
+│- O rateio é feito proporcionalmente ao consumo de cada unidade         │
+│- Alertas são enviados por e-mail e no painel do síndico                │
+│                                                                        │
+│REGRAS DE COMPORTAMENTO:                                                │
+│1. Responda SEMPRE em português brasileiro claro e acessível            │
+│2. Identifique qual persona está perguntando quando possível            │
+│3. Se não souber um dado específico, oriente onde encontrar no sistema  │
+│4. Para falhas graves de equipamento, sempre indique o suporte GoodWe   │
+│5. Perguntas fora do contexto de EVs e gestão condominial:              │
+│   informe educadamente que estão fora do seu escopo                    │
+│6. Nunca invente dados numéricos — use exemplos ilustrativos quando     │
+│necessário                                                              │
+└────────────────────────────────────────────────────────────────────────┘
+
+
+Modelo de Testes
+O modelo de testes define as 5 perguntas esperadas e o critério de avaliação da resposta ideal para cada uma. Este modelo será a base da avaliação na Sprint 2.
+
+Teste 1 — Consulta de consumo (Persona: Morador)
+Pergunta:
+
+"Quanto meu apartamento consumiu de energia no carregamento este mês?"
+
+Critério de resposta ideal:
+A resposta deve informar que o consumo individual fica disponível no painel do morador (app ou portal GoodWe), explicar que o valor é medido em kWh e convertido para reais com base na tarifa configurada pelo síndico, e orientar como acessar esse relatório.
+O que avalia:
+Capacidade do chatbot de orientar o morador sem inventar dados numéricos específicos, direcionando para a fonte correta de informação.
+
+Teste 2 — Agendamento de carregamento (Persona: Morador)
+Pergunta:
+
+"Como faço para agendar o carregamento do meu carro para a madrugada?"
+
+Critério de resposta ideal:
+A resposta deve explicar o passo a passo de agendamento pelo app ou portal GoodWe, mencionar que horários de menor demanda (como madrugada) podem ter prioridade ou tarifa reduzida, e informar como cancelar ou alterar um agendamento existente.
+O que avalia:
+Capacidade de guiar o morador em um processo operacional com instruções claras e sequenciais.
+
+Teste 3 — Diagnóstico de falha (Persona: Técnico / Zelador)
+Pergunta:
+
+"O carregador do box 7 está com a luz vermelha piscando. O que significa?"
+
+Critério de resposta ideal:
+A resposta deve descrever que luz vermelha piscando indica erro de comunicação ou falha elétrica no equipamento GoodWe, orientar o procedimento básico de reinicialização (desligar e religar o disjuntor específico), e indicar claramente quando o suporte técnico GoodWe deve ser acionado.
+O que avalia:
+Capacidade do chatbot de fornecer diagnóstico técnico útil sem inventar informações e sem substituir o suporte especializado.
+
+Teste 4 — Rateio de custos (Persona: Síndico)
+Pergunta:
+
+"Como é feito o rateio do custo de energia entre os moradores que usaram o carregador?"
+
+Critério de resposta ideal:
+A resposta deve explicar que o rateio é proporcional ao consumo registrado em kWh por cada unidade, que o sistema GoodWe EV ChargeOps gera relatório mensal automático com o consumo individual, e que o síndico pode configurar a tarifa base (R$/kWh) no painel administrativo para que o valor em reais seja calculado automaticamente.
+O que avalia:
+Capacidade do chatbot de explicar um conceito financeiro-operacional de forma clara para o síndico, sem simplificar demais nem usar termos excessivamente técnicos.
+
+Teste 5 — Orquestração de carga (Persona: Síndico)
+Pergunta:
+
+"Posso limitar quantos carros carregam ao mesmo tempo para não sobrecarregar a rede elétrica?"
+
+Critério de resposta ideal:
+A resposta deve explicar o conceito de orquestração de carga (load balancing), informar que o sistema GoodWe permite configurar um limite de potência simultânea no painel administrativo do síndico, e descrever que o sistema redistribui automaticamente a potência disponível entre os carregadores ativos, priorizando conforme regras pré-definidas.
+O que avalia:
+Capacidade do chatbot de explicar um conceito técnico avançado (orquestração de potência) de forma acessível para um síndico sem formação técnica.
+
+Conclusão:
+
+A Sprint 1 estabeleceu as bases sólidas do GoodWe EV ChargeOps Chatbot, demonstrando que a combinação entre um system prompt bem estruturado, um modelo de linguagem de alta performance (Llama 3 via Groq) e um escopo condominial bem definido é suficiente para construir uma ferramenta operacional real — não apenas uma demonstração genérica de IA.
+O maior aprendizado desta etapa foi entender que a qualidade do chatbot não depende apenas do modelo escolhido, mas principalmente do contexto que é fornecido a ele. Um system prompt preciso, com personas bem definidas, regras claras de comportamento e contexto técnico relevante, transforma um modelo genérico em um assistente especializado e confiável.
+Com o modelo de testes definido e o código funcional, o grupo está preparado para a Sprint 2, onde as respostas serão avaliadas com métricas objetivas e a solução evoluirá para uma interface mais acessível ao usuário final.
